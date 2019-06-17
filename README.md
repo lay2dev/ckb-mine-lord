@@ -1,3 +1,3 @@
-# Quasar App
+# CKB Mine Lord
 
 > WIP
