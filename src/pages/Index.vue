@@ -69,7 +69,7 @@
 
 <script>
 import axios from 'axios'
-const api = 'http://api.yamen.co:7002/'
+const api = 'https://api.yamen.co/'
 export default {
   name: 'Index',
   data () {
@@ -83,7 +83,7 @@ export default {
       this.load().then(done)
     },
     load: async function () {
-      const { data: { total, list } } = await axios.get(api + 'info/records')
+      const { data: { total, list } } = await axios.get(api)
       this.total = total
       this.list = list
     },
@@ -92,6 +92,9 @@ export default {
       where === 'talk' && (url = 'https://talk.nervos.org/t/ckb-testnet/1869')
       window.location.href = url
     }
+  },
+  created () {
+    this.$q.addressbarColor.set('#000000')
   },
   mounted () {
     this.refresh()
