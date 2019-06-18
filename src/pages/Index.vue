@@ -69,7 +69,7 @@
 
 <script>
 import axios from 'axios'
-const api = 'http://api.yamen.co:7002/'
+const api = 'http://api.yamen.co/'
 export default {
   name: 'Index',
   data () {
