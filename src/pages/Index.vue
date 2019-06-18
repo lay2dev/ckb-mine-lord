@@ -69,7 +69,7 @@
 
 <script>
 import axios from 'axios'
-const api = 'http://api.yamen.co/'
+const api = 'https://api.yamen.co/'
 export default {
   name: 'Index',
   data () {
@@ -83,7 +83,7 @@ export default {
       this.load().then(done)
     },
     load: async function () {
-      const { data: { total, list } } = await axios.get(api + 'info/records')
+      const { data: { total, list } } = await axios.get(api)
       this.total = total
       this.list = list
     },
