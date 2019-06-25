@@ -12,6 +12,11 @@
             <q-btn flat label="Join them" color="orange" @click="goto('talk')" />
           </template>
         </q-banner>
+        <div class="row q-mt-sm justify-between rounded-borders q-pa-sm bg-blue-grey-10 text-white">
+          <div><span class="stat-label">TBLK: </span> <span class="stat-value">{{ height }}</span></div>
+          <div><span class="stat-label">DFCT: </span> <span class="stat-value">{{ numberWithCommas(difficulty) }}</span></div>
+          <div><span class="stat-label">HASH: </span> <span class="stat-value">{{ hashrate.split('.')[0] }} TPS</span></div>
+        </div>
       </div>
       <q-list dark bordered separator>
         <q-item v-for="item in list" :key="item.rank" clickable @click="goto(item.addr)" v-ripple class="row">
@@ -38,6 +43,15 @@
   font-size: 1.5em;
   font-weight: bold;
   color: orange;
+}
+.stat-label {
+  font-size: 0.8em;
+  color: grey;
+}
+.stat-value {
+  font-size: 0.8em;
+  color: orange;
+  font-weight: bold;
 }
 .rank_text {
   color: wheat;
@@ -70,12 +84,17 @@
 <script>
 import axios from 'axios'
 const api = 'https://api.yamen.co/'
+const nervos = 'https://explorer.nervos.org:30001/api/v1/statistics'
 export default {
   name: 'Index',
   data () {
     return {
       total: 0,
-      list: []
+      list: [],
+      height: 0,
+      difficulty: 0,
+      hashrate: 0,
+      blocktime: 0
     }
   },
   methods: {
@@ -86,11 +105,30 @@ export default {
       const { data: { total, list } } = await axios.get(api)
       this.total = total
       this.list = list
+      const { data: { data: { attributes: {
+        current_epoch_difficulty: difficulty,
+        hash_rate: hashrate,
+        tip_block_number: height,
+        average_block_time: blocktime
+      } } } } = await axios.get(nervos, {
+        data: {},
+        headers: {
+          'Content-Type': 'application/vnd.api+json',
+          'Accept': 'application/vnd.api+json'
+        }
+      })
+      this.difficulty = difficulty
+      this.height = height
+      this.hashrate = hashrate
+      this.blocktime = blocktime
     },
     goto: function (where) {
       let url = 'https://explorer.nervos.org/address/' + where
       where === 'talk' && (url = 'https://talk.nervos.org/t/ckb-testnet/1869')
       window.location.href = url
+    },
+    numberWithCommas: function (x) {
+      return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
     }
   },
   created () {
