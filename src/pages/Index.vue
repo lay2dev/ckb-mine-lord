@@ -15,7 +15,7 @@
         <div class="row q-mt-sm justify-between rounded-borders q-pa-sm bg-blue-grey-10 text-white">
           <div><span class="stat-label">TBLK: </span> <span class="stat-value">{{ height }}</span></div>
           <div><span class="stat-label">DFCT: </span> <span class="stat-value">{{ numberWithCommas(difficulty) }}</span></div>
-          <div><span class="stat-label">HASH: </span> <span class="stat-value">{{ hashrate.split('.')[0] }} TPS</span></div>
+          <div><span class="stat-label">HASH: </span> <span class="stat-value">{{ numberWithCommas(hashrate.split('.')[0]) }}K GPS</span></div>
         </div>
       </div>
       <q-list dark bordered separator>
