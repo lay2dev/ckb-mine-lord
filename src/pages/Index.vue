@@ -91,10 +91,10 @@ export default {
     return {
       total: 0,
       list: [],
-      height: 0,
-      difficulty: 0,
-      hashrate: 0,
-      blocktime: 0
+      height: '-',
+      difficulty: '-',
+      hashrate: '-',
+      blocktime: '-.0'
     }
   },
   methods: {
@@ -102,25 +102,29 @@ export default {
       this.load().then(done)
     },
     load: async function () {
-      const { data: { total, list } } = await axios.get(api)
-      this.total = total
-      this.list = list
-      const { data: { data: { attributes: {
-        current_epoch_difficulty: difficulty,
-        hash_rate: hashrate,
-        tip_block_number: height,
-        average_block_time: blocktime
-      } } } } = await axios.get(nervos, {
-        data: {},
-        headers: {
-          'Content-Type': 'application/vnd.api+json',
-          'Accept': 'application/vnd.api+json'
-        }
-      })
-      this.difficulty = difficulty
-      this.height = height
-      this.hashrate = hashrate
-      this.blocktime = blocktime
+      try {
+        const { data: { total, list } } = await axios.get(api)
+        this.total = total
+        this.list = list
+        const { data: { data: { attributes: {
+          current_epoch_difficulty: difficulty,
+          hash_rate: hashrate,
+          tip_block_number: height,
+          average_block_time: blocktime
+        } } } } = await axios.get(nervos, {
+          data: {},
+          headers: {
+            'Content-Type': 'application/vnd.api+json',
+            'Accept': 'application/vnd.api+json'
+          }
+        })
+        this.difficulty = difficulty
+        this.height = height
+        this.hashrate = hashrate
+        this.blocktime = blocktime
+      } catch (e) {
+        console.error(e)
+      }
     },
     goto: function (where) {
       let url = 'https://explorer.nervos.org/address/' + where
@@ -130,9 +134,6 @@ export default {
     numberWithCommas: function (x) {
       return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
     }
-  },
-  created () {
-    this.$q.addressbarColor.set('#000000')
   },
   mounted () {
     this.refresh()
