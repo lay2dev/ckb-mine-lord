@@ -39,9 +39,17 @@ module.exports = function (ctx) {
         'QBtn',
         'QIcon',
         'QPullToRefresh',
+        'QLinearProgress',
+        'QSpace',
+        'QTooltip',
         'QList',
         'QItem',
         'QItemSection',
+        'QTabs',
+        'QTab',
+        'QTabPanels',
+        'QTabPanel',
+        'QSeparator',
         'QItemLabel'
       ],
 

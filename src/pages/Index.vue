@@ -5,42 +5,170 @@
         <q-banner inline-actions rounded dense class="bg-blue-grey-10 text-white">
           <template v-slot:avatar>
             <q-avatar text-color="orange" font-size="1em" icon="developer_board" />
-            <span class="text-orange q-ml-xs">Miners:</span>
+            <span class="text-orange q-mx-xs">EPOCH:</span>
+            <span class="miners vertical-middle">{{ epoch.number }}</span>
           </template>
-          <span class="miners vertical-middle">{{ total }}</span>
-          <template v-slot:action>
-            <q-btn flat label="Join them" color="orange" @click="goto('talk')" />
-          </template>
+          <q-linear-progress class="q-px-md" dark stripe rounded style="height: 10px" :value="epochProgress" color="warning" />
+          <span class="text-verticle"> {{ epochProgress.value }}</span>
         </q-banner>
         <div class="row q-mt-sm justify-between rounded-borders q-pa-sm bg-blue-grey-10 text-white">
+          <div><span class="stat-label">ADDR: </span> <span class="stat-value">{{ total }}</span></div>
           <div><span class="stat-label">TBLK: </span> <span class="stat-value">{{ height }}</span></div>
           <div><span class="stat-label">DFCT: </span> <span class="stat-value">{{ numberWithCommas(difficulty) }}</span></div>
-          <div><span class="stat-label">HASH: </span> <span class="stat-value">{{ numberWithCommas(hashrate.split('.')[0]) }}K GPS</span></div>
+          <div><span class="stat-label">HASH: </span> <span class="stat-value">{{ numberWithCommas(hashrate.split('.')[0]) }}K</span></div>
         </div>
       </div>
-      <q-list dark bordered separator>
-        <q-item v-for="item in list" :key="item.rank" clickable @click="goto(item.addr)" v-ripple class="row">
-          <q-item-section avatar>
-            <center class="rank_text"> {{item.rank}} </center>
-          </q-item-section>
-          <q-item-section>
-            <q-item-label class="text-primary nick" :class="item.rank < 4 && 'text-orange'"> {{item.addr.slice(-3)}} </q-item-label>
-            <q-item-label caption class="addr"> {{item.addr.slice(0, 8) + '...' + item.addr.slice(-8)}} </q-item-label>
-          </q-item-section>
-          <q-item-section side>
-            <q-item-label class="text-primary balance"> {{item.amount.slice(0, -8)}} <small class="text-grey">CKB</small> </q-item-label>
-            <q-item-label class="blocks"> {{item.blocks}} <small class="text-grey">BLK</small> </q-item-label>
-          </q-item-section>
-        </q-item>
-      </q-list>
+      <q-tabs narrow-indicator v-model="tab" class="bg-grey-10 text-grey-5" align="justify" bordered dense>
+        <q-tab name='rank' label='Rank' />
+        <q-tab name='luck' label='Luck' />
+      </q-tabs>
+      <q-separator dark />
+      <q-tab-panels v-model="tab" animated swipeable class="bg-grey-10">
+        <q-tab-panel name="rank">
+          <q-list dark bordered separator>
+            <q-item v-for="item in list" :key="item.rank" clickable @click="goto(item.addr)" v-ripple class="row">
+              <q-item-section avatar>
+                <center class="rank_text"> {{item.rank}} </center>
+              </q-item-section>
+              <q-item-section>
+                <q-item-label class="text-primary nick" :class="item.rank < 4 && 'text-orange'"> {{item.addr.slice(-3)}} </q-item-label>
+                <q-item-label caption class="addr"> {{item.addr.slice(0, 3) + '...' + item.addr.slice(-6)}} </q-item-label>
+              </q-item-section>
+              <q-item-section side>
+                <q-item-label class="balance"> {{item.amount.slice(0, -8)}} <small class="text-grey-7">CKB-TEST</small> </q-item-label>
+                <q-item-label class="exp"> {{item.exp}} <small class="text-grey-5">CKB-REAL</small> </q-item-label>
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </q-tab-panel>
+        <q-tab-panel name="luck">
+          <q-list dark bordered separator>
+            <q-item v-for="item in epochs" :key="item.number" clickable @click="goto(item.startNumber)" v-ripple class="row">
+              <q-item-section avatar>
+                <center class="rank_text"> {{item.number}} </center>
+              </q-item-section>
+              <q-item-section>
+                <q-item-label class="text-primary nick"> {{item.lucky.slice(-3)}} </q-item-label>
+                <q-item-label caption class="addr"> {{item.lucky.slice(0, 3) + '...' + item.lucky.slice(-6)}} </q-item-label>
+              </q-item-section>
+              <q-item-section side>
+                <q-item-label class="block">block: <span class="text-light-blue"> {{item.startNumber}} </span></q-item-label>
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </q-tab-panel>
+      </q-tab-panels>
       <center class="footer"> [ zhixian@yamen.co ] </center>
     </q-pull-to-refresh>
   </q-page>
 </template>
 
-<style>
+<script>
+import axios from 'axios'
+import { colors } from 'quasar'
+const api = 'https://api.yamen.co/'
+const nervos = 'https://explorer.nervos.org:30001/api/v1/statistics'
+export default {
+  name: 'Index',
+  data () {
+    return {
+      total: 0,
+      tab: 'rank',
+      list: [],
+      epochs: [],
+      height: '-',
+      difficulty: '...',
+      hashrate: '...',
+      blocktime: '-.0',
+      epoch: {}
+    }
+  },
+  methods: {
+    refresh: function (done) {
+      this.load().then(done)
+    },
+    load: async function () {
+      try {
+        const res = await Promise.all([
+          axios.get(api),
+          axios.get(nervos, {
+            data: {},
+            headers: {
+              'Content-Type': 'application/vnd.api+json',
+              'Accept': 'application/vnd.api+json'
+            }
+          })
+          // axios.get(api + 'info/epochs')
+        ])
+        console.log('res', res)
+        const { data: { total, list, epochs, epoch, height } } = res[0]
+        this.total = total
+        this.list = list
+        this.epoch = epoch
+        this.height = height
+        this.epochs = epochs
+
+        const { data: { data: { attributes: {
+          current_epoch_difficulty: difficulty,
+          hash_rate: hashrate,
+          average_block_time: blocktime
+        } } } } = res[1]
+        this.difficulty = difficulty
+        this.hashrate = hashrate
+        this.blocktime = blocktime
+
+        // this.epochs = (res[2]).data.reverse()
+      } catch (e) {
+        console.error(e)
+      }
+    },
+    goto: function (where) {
+      let url = 'https://explorer.nervos.org/'
+      url = url + (isNaN(where) ? 'address/' : 'block/') + where
+      where === 'talk' && (url = 'https://talk.nervos.org/t/ckb-testnet/1869')
+      window.location.href = url
+    },
+    numberWithCommas: function (x) {
+      return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+    }
+  },
+  computed: {
+    epochProgress: function () {
+      let { startNumber, length } = this.epoch
+      let { height } = this
+
+      try {
+        startNumber = parseInt(startNumber)
+        length = parseInt(length)
+        height = parseInt(height)
+
+        let value = ((height - startNumber + 1) / length).toFixed(2)
+        value = parseFloat(value)
+
+        colors.setBrand('warning', getColor(value))
+
+        return value
+      } catch (e) {
+        console.error(e)
+      }
+
+      return 0
+    }
+  },
+  mounted () {
+    this.refresh()
+  }
+}
+function getColor (value) { // value from 0 to 1
+  const hue = ((1 - value) * 100).toString(10)
+  const color = ['hsl(', hue, ',54.8%,50.6%)'].join('')
+  return color
+}
+</script>
+
+<style lang="stylus" scoped>
 .miners {
-  font-size: 1.5em;
+  font-size: 1.2em;
   font-weight: bold;
   color: orange;
 }
@@ -61,6 +189,9 @@
 .q-item__section--avatar {
   min-width: inherit;
 }
+.q-tab-panel {
+  padding: 10px 0;
+}
 .nick {
   font-size: 1.3em;
 }
@@ -68,75 +199,16 @@
   color: darkgrey;
   font-size: 0.7em;
 }
-.balance {
-  font-weight: bold;
-}
-.blocks {
-  color: skyblue;
-  font-weight: bold;
-}
+.balance
+  color $primary
+  font-weight bold
+
+.exp
+  color $blue-5
+  font-weight bold
+
 .footer {
   color: grey;
   padding: 1em;
 }
 </style>
-
-<script>
-import axios from 'axios'
-const api = 'https://api.yamen.co/'
-const nervos = 'https://explorer.nervos.org:30001/api/v1/statistics'
-export default {
-  name: 'Index',
-  data () {
-    return {
-      total: 0,
-      list: [],
-      height: '-',
-      difficulty: '-',
-      hashrate: '-',
-      blocktime: '-.0'
-    }
-  },
-  methods: {
-    refresh: function (done) {
-      this.load().then(done)
-    },
-    load: async function () {
-      try {
-        const { data: { total, list } } = await axios.get(api)
-        this.total = total
-        this.list = list
-        const { data: { data: { attributes: {
-          current_epoch_difficulty: difficulty,
-          hash_rate: hashrate,
-          tip_block_number: height,
-          average_block_time: blocktime
-        } } } } = await axios.get(nervos, {
-          data: {},
-          headers: {
-            'Content-Type': 'application/vnd.api+json',
-            'Accept': 'application/vnd.api+json'
-          }
-        })
-        this.difficulty = difficulty
-        this.height = height
-        this.hashrate = hashrate
-        this.blocktime = blocktime
-      } catch (e) {
-        console.error(e)
-      }
-    },
-    goto: function (where) {
-      let url = 'https://explorer.nervos.org/address/' + where
-      where === 'talk' && (url = 'https://talk.nervos.org/t/ckb-testnet/1869')
-      window.location.href = url
-    },
-    numberWithCommas: function (x) {
-      return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-    }
-  },
-  mounted () {
-    this.refresh()
-  }
-}
-</script>
