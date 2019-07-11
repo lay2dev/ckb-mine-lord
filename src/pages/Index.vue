@@ -52,7 +52,7 @@
                 <q-item-label caption class="addr"> {{item.lucky.slice(0, 3) + '...' + item.lucky.slice(-6)}} </q-item-label>
               </q-item-section>
               <q-item-section side>
-                <q-item-label class="row justify-between" style="min-width: 85px"><span>height: </span><span class="text-primary text-bold"> {{item.number === '12' ? '12345' : item.startNumber}} </span></q-item-label>
+                <q-item-label class="row justify-between" style="min-width: 85px"><span>height: </span><span class="text-primary text-bold"> {{item.startNumber}} </span></q-item-label>
               </q-item-section>
             </q-item>
           </q-list>
