@@ -1,5 +1,5 @@
 <template>
-  <q-page class="column q-px-md q-py-xs bg-grey-10 text-white">
+  <q-page class="column q-px-md q-pt-xs q-pb-md bg-grey-10 text-white">
     <q-pull-to-refresh @refresh="refresh">
       <div class="q-py-sm">
         <q-banner inline-actions rounded dense class="bg-blue-grey-10 text-white">
@@ -19,8 +19,8 @@
         </div>
       </div>
       <q-tabs narrow-indicator v-model="tab" class="bg-grey-10 text-grey-5" align="justify" bordered dense>
-        <q-tab name='rank' label='Rank' />
-        <q-tab name='luck' label='Luck' />
+        <q-tab name='rank' class="text-primary" label='Rank' />
+        <q-tab name='luck' class="text-amber" label='Luck' />
       </q-tabs>
       <q-separator dark />
       <q-tab-panels v-model="tab" animated swipeable class="bg-grey-10">
@@ -31,7 +31,7 @@
                 <center class="rank_text"> {{item.rank}} </center>
               </q-item-section>
               <q-item-section>
-                <q-item-label class="text-primary nick" :class="item.rank < 4 && 'text-orange'"> {{item.addr.slice(-3)}} </q-item-label>
+                <q-item-label class="text-primary nick"> {{item.addr.slice(-3)}} </q-item-label>
                 <q-item-label caption class="addr"> {{item.addr.slice(0, 3) + '...' + item.addr.slice(-6)}} </q-item-label>
               </q-item-section>
               <q-item-section side>
@@ -41,23 +41,27 @@
             </q-item>
           </q-list>
         </q-tab-panel>
-        <q-tab-panel name="luck">
+        <q-tab-panel name="luck" class="bg-deep-blue">
           <q-list dark bordered separator>
             <q-item v-for="item in epochs" :key="item.number" clickable @click="goto(item.startNumber)" v-ripple class="row">
               <q-item-section avatar>
                 <center class="rank_text"> {{item.number}} </center>
               </q-item-section>
               <q-item-section>
-                <q-item-label class="text-primary nick"> {{item.lucky.slice(-3)}} </q-item-label>
+                <q-item-label class="text-amber nick"> {{item.lucky.slice(-3)}} </q-item-label>
                 <q-item-label caption class="addr"> {{item.lucky.slice(0, 3) + '...' + item.lucky.slice(-6)}} </q-item-label>
               </q-item-section>
               <q-item-section side>
-                <q-item-label class="block">block: <span class="text-light-blue"> {{item.startNumber}} </span></q-item-label>
+                <q-item-label class="block">height: <span class="text-primary text-bold"> {{item.startNumber}} </span></q-item-label>
               </q-item-section>
             </q-item>
           </q-list>
         </q-tab-panel>
       </q-tab-panels>
+      <center class="footer">
+        <span> Statistics on this site is for reference only. </span>
+        <p> The official result shall prevail. </p>
+      </center>
       <center class="footer"> [ zhixian@yamen.co ] </center>
     </q-pull-to-refresh>
   </q-page>
@@ -106,7 +110,7 @@ export default {
         this.list = list
         this.epoch = epoch
         this.height = height
-        this.epochs = epochs
+        this.epochs = epochs.reverse()
 
         const { data: { data: { attributes: {
           current_epoch_difficulty: difficulty,
@@ -209,6 +213,5 @@ function getColor (value) { // value from 0 to 1
 
 .footer {
   color: grey;
-  padding: 1em;
 }
 </style>
