@@ -5,11 +5,10 @@
         <q-banner inline-actions rounded dense class="bg-blue-grey-10 text-white">
           <template v-slot:avatar>
             <q-avatar text-color="orange" font-size="1em" icon="developer_board" />
-            <span class="text-orange q-mx-xs">EPOCH:</span>
-            <span class="miners vertical-middle">{{ epoch.number }}</span>
+            <span class="miners vertical-middle q-mx-xs"> EPOCH: {{ epoch.number }}</span>
+            <small class="text-warning text-bold vertical-middle q-mx-xs"> [ {{ epochProgress.progress }} / {{ epochProgress.length }} ] </small>
           </template>
-          <q-linear-progress class="q-px-md" dark stripe rounded style="height: 10px" :value="epochProgress" color="warning" />
-          <span class="text-verticle"> {{ epochProgress.value }}</span>
+          <q-linear-progress class="q-px-md" dark rounded style="height: 10px" :value="epochProgress.value" color="warning" />
         </q-banner>
         <div class="row q-mt-sm justify-between rounded-borders q-pa-sm bg-blue-grey-10 text-white">
           <div><span class="stat-label">ADDR: </span> <span class="stat-value">{{ total }}</span></div>
@@ -146,12 +145,13 @@ export default {
         length = parseInt(length)
         height = parseInt(height)
 
-        let value = ((height - startNumber + 1) / length).toFixed(2)
+        const progress = height - startNumber + 1
+        let value = (progress / length).toFixed(2)
         value = parseFloat(value)
 
         colors.setBrand('warning', getColor(value))
 
-        return value
+        return { length, progress, value }
       } catch (e) {
         console.error(e)
       }
